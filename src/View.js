@@ -1,20 +1,19 @@
-import c from 'cassowary/bin/c';
-//import kiwi from 'kiwi/ts/bin/kiwi';
+import solver from 'constraint-solver';
 import Attribute from './Attribute';
 import Relation from './Relation';
 import SubView from './SubView';
 
-const defaultPriorityStrength = process.env.CASSOWARYJS ? new c.Strength('defaultPriority', 0, 1000, 1000) : kiwi.Strength.create(0, 1000, 1000);
+const defaultPriorityStrength = process.env.CASSOWARYJS ? new solver.Strength('defaultPriority', 0, 1000, 1000) : solver.Strength.create(0, 1000, 1000);
 
 function _getConst(name, value) {
     if (process.env.CASSOWARYJS) {
-        const vr = new c.Variable({value: value});
-        this._solver.addConstraint(new c.StayConstraint(vr, c.Strength.required, 0));
+        const vr = new solver.Variable({value: value});
+        this._solver.addConstraint(new solver.StayConstraint(vr, solver.Strength.required, 0));
         return vr;
     }
     else {
-        const vr = new kiwi.Variable();
-        this._solver.addConstraint(new kiwi.Constraint(vr, kiwi.Operator.Eq, value));
+        const vr = new solver.Variable();
+        this._solver.addConstraint(new solver.Constraint(vr, solver.Operator.Eq, value));
         return vr;
     }
 }
@@ -74,13 +73,13 @@ function _getSpacing(constraint) {
     this._spacingExpr = this._spacingExpr || new Array(7);
     if (!this._spacingVars[index]) {
         if (process.env.CASSOWARYJS) {
-            this._spacingVars[index] = new c.Variable();
+            this._spacingVars[index] = new solver.Variable();
             this._solver.addEditVar(this._spacingVars[index]);
-            this._spacingExpr[index] = c.minus(0, this._spacingVars[index]);
+            this._spacingExpr[index] = solver.minus(0, this._spacingVars[index]);
         }
         else {
-            this._spacingVars[index] = new kiwi.Variable();
-            this._solver.addEditVariable(this._spacingVars[index], kiwi.Strength.create(999, 1000, 1000));
+            this._spacingVars[index] = new solver.Variable();
+            this._solver.addEditVariable(this._spacingVars[index], solver.Strength.create(999, 1000, 1000));
             this._spacingExpr[index] = this._spacingVars[index].multiply(-1);
         }
         this._solver.suggestValue(this._spacingVars[index], this._spacing[index]);
@@ -105,25 +104,25 @@ function _addConstraint(constraint) {
         else {
             attr2 = _getSubView.call(this, constraint.view2)._getAttr(constraint.attr2);
             if ((multiplier !== 1) && constant) {
-                attr2 = c.plus(c.times(attr2, multiplier), constant);
+                attr2 = solver.plus(solver.times(attr2, multiplier), constant);
             }
             else if (constant) {
-                attr2 = c.plus(attr2, constant);
+                attr2 = solver.plus(attr2, constant);
             }
             else if (multiplier !== 1) {
-                attr2 = c.times(attr2, multiplier);
+                attr2 = solver.times(attr2, multiplier);
             }
         }
-        const strength = ((constraint.priority !== undefined) && (constraint.priority < 1000)) ? new c.Strength('priority', 0, constraint.priority, 1000) : defaultPriorityStrength;
+        const strength = ((constraint.priority !== undefined) && (constraint.priority < 1000)) ? new solver.Strength('priority', 0, constraint.priority, 1000) : defaultPriorityStrength;
         switch (constraint.relation) {
             case Relation.EQU:
-                relation = new c.Equation(attr1, attr2, strength);
+                relation = new solver.Equation(attr1, attr2, strength);
                 break;
             case Relation.GEQ:
-                relation = new c.Inequality(attr1, c.GEQ, attr2, strength);
+                relation = new solver.Inequality(attr1, solver.GEQ, attr2, strength);
                 break;
             case Relation.LEQ:
-                relation = new c.Inequality(attr1, c.LEQ, attr2, strength);
+                relation = new solver.Inequality(attr1, solver.LEQ, attr2, strength);
                 break;
             default:
                 throw 'Invalid relation specified: ' + constraint.relation;
@@ -145,16 +144,16 @@ function _addConstraint(constraint) {
                 attr2 = attr2.multiply(multiplier);
             }
         }
-        const strength = ((constraint.priority !== undefined) && (constraint.priority < 1000)) ? kiwi.Strength.create(0, constraint.priority, 1000) : defaultPriorityStrength;
+        const strength = ((constraint.priority !== undefined) && (constraint.priority < 1000)) ? solver.Strength.create(0, constraint.priority, 1000) : defaultPriorityStrength;
         switch (constraint.relation) {
             case Relation.EQU:
-                relation = new kiwi.Constraint(attr1, kiwi.Operator.Eq, attr2, strength);
+                relation = new solver.Constraint(attr1, solver.Operator.Eq, attr2, strength);
                 break;
             case Relation.GEQ:
-                relation = new kiwi.Constraint(attr1, kiwi.Operator.Ge, attr2, strength);
+                relation = new solver.Constraint(attr1, solver.Operator.Ge, attr2, strength);
                 break;
             case Relation.LEQ:
-                relation = new kiwi.Constraint(attr1, kiwi.Operator.Le, attr2, strength);
+                relation = new solver.Constraint(attr1, solver.Operator.Le, attr2, strength);
                 break;
             default:
                 throw 'Invalid relation specified: ' + constraint.relation;
@@ -208,7 +207,7 @@ class View {
      * @param {Array} [options.constraints] One or more constraint definitions (see `addConstraints`).
      */
     constructor(options) {
-        this._solver = process.env.CASSOWARYJS ? new c.SimplexSolver() : new kiwi.Solver();
+        this._solver = process.env.CASSOWARYJS ? new solver.SimplexSolver() : new solver.Solver();
         this._subViews = {};
         //this._spacing = undefined;
         this._parentSubView = new SubView({

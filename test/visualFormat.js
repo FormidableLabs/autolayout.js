@@ -1,6 +1,6 @@
 /*global describe, it*/
 var assert = (typeof window === 'undefined') ? require('assert') : window.chai.assert;
-var AutoLayout = (typeof window === 'undefined') ? require('../dist/autolayout') : window.AutoLayout;
+var AutoLayout = (typeof window === 'undefined') ? require('../dist/autolayout.kiwi.min').default : window.AutoLayout;
 
 describe('VisualFormat', function() {
     describe('parse', function() {

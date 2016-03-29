@@ -1,5 +1,4 @@
-import c from 'cassowary/bin/c';
-//import kiwi from 'kiwi/ts/bin/kiwi';
+import solver from 'constraint-solver';
 import Attribute from './Attribute';
 
 /**
@@ -15,20 +14,20 @@ class SubView {
         this._attr = {};
         if (!options.name) {
             if (process.env.CASSOWARYJS) {
-                this._attr[Attribute.LEFT] = new c.Variable();
-                this._solver.addConstraint(new c.StayConstraint(this._attr[Attribute.LEFT], c.Strength.required));
-                this._attr[Attribute.TOP] = new c.Variable();
-                this._solver.addConstraint(new c.StayConstraint(this._attr[Attribute.TOP], c.Strength.required));
-                this._attr[Attribute.ZINDEX] = new c.Variable();
-                this._solver.addConstraint(new c.StayConstraint(this._attr[Attribute.ZINDEX], c.Strength.required));
+                this._attr[Attribute.LEFT] = new solver.Variable();
+                this._solver.addConstraint(new solver.StayConstraint(this._attr[Attribute.LEFT], solver.Strength.required));
+                this._attr[Attribute.TOP] = new solver.Variable();
+                this._solver.addConstraint(new solver.StayConstraint(this._attr[Attribute.TOP], solver.Strength.required));
+                this._attr[Attribute.ZINDEX] = new solver.Variable();
+                this._solver.addConstraint(new solver.StayConstraint(this._attr[Attribute.ZINDEX], solver.Strength.required));
             }
             else {
-                this._attr[Attribute.LEFT] = new kiwi.Variable();
-                this._solver.addConstraint(new kiwi.Constraint(this._attr[Attribute.LEFT], kiwi.Operator.Eq, 0));
-                this._attr[Attribute.TOP] = new kiwi.Variable();
-                this._solver.addConstraint(new kiwi.Constraint(this._attr[Attribute.TOP], kiwi.Operator.Eq, 0));
-                this._attr[Attribute.ZINDEX] = new kiwi.Variable();
-                this._solver.addConstraint(new kiwi.Constraint(this._attr[Attribute.ZINDEX], kiwi.Operator.Eq, 0));
+                this._attr[Attribute.LEFT] = new solver.Variable();
+                this._solver.addConstraint(new solver.Constraint(this._attr[Attribute.LEFT], solver.Operator.Eq, 0));
+                this._attr[Attribute.TOP] = new solver.Variable();
+                this._solver.addConstraint(new solver.Constraint(this._attr[Attribute.TOP], solver.Operator.Eq, 0));
+                this._attr[Attribute.ZINDEX] = new solver.Variable();
+                this._solver.addConstraint(new solver.Constraint(this._attr[Attribute.ZINDEX], solver.Operator.Eq, 0));
             }
         }
     }
@@ -111,10 +110,10 @@ class SubView {
             const attr = this._getAttr(Attribute.WIDTH);
             if (this._intrinsicWidth === undefined) {
                 if (process.env.CASSOWARYJS) {
-                    this._solver.addEditVar(attr, new c.Strength('required', this._name ? 998 : 999, 1000, 1000));
+                    this._solver.addEditVar(attr, new solver.Strength('required', this._name ? 998 : 999, 1000, 1000));
                 }
                 else {
-                    this._solver.addEditVariable(attr, kiwi.Strength.create(this._name ? 998 : 999, 1000, 1000));
+                    this._solver.addEditVariable(attr, solver.Strength.create(this._name ? 998 : 999, 1000, 1000));
                 }
             }
             this._intrinsicWidth = value;
@@ -143,10 +142,10 @@ class SubView {
             const attr = this._getAttr(Attribute.HEIGHT);
             if (this._intrinsicHeight === undefined) {
                 if (process.env.CASSOWARYJS) {
-                    this._solver.addEditVar(attr, new c.Strength('required', this._name ? 998 : 999, 1000, 1000));
+                    this._solver.addEditVar(attr, new solver.Strength('required', this._name ? 998 : 999, 1000, 1000));
                 }
                 else {
-                    this._solver.addEditVariable(attr, kiwi.Strength.create(this._name ? 998 : 999, 1000, 1000));
+                    this._solver.addEditVariable(attr, solver.Strength.create(this._name ? 998 : 999, 1000, 1000));
                 }
             }
             this._intrinsicHeight = value;
@@ -231,46 +230,46 @@ class SubView {
         if (this._attr[attr]) {
             return this._attr[attr];
         }
-        this._attr[attr] = process.env.CASSOWARYJS ? new c.Variable() : new kiwi.Variable();
+        this._attr[attr] = process.env.CASSOWARYJS ? new solver.Variable() : new solver.Variable();
         switch (attr) {
             case Attribute.RIGHT:
                 this._getAttr(Attribute.LEFT);
                 this._getAttr(Attribute.WIDTH);
                 if (process.env.CASSOWARYJS) {
-                    this._solver.addConstraint(new c.Equation(this._attr[attr], c.plus(this._attr[Attribute.LEFT], this._attr[Attribute.WIDTH])));
+                    this._solver.addConstraint(new solver.Equation(this._attr[attr], solver.plus(this._attr[Attribute.LEFT], this._attr[Attribute.WIDTH])));
                 }
                 else {
-                    this._solver.addConstraint(new kiwi.Constraint(this._attr[attr], kiwi.Operator.Eq, this._attr[Attribute.LEFT].plus(this._attr[Attribute.WIDTH])));
+                    this._solver.addConstraint(new solver.Constraint(this._attr[attr], solver.Operator.Eq, this._attr[Attribute.LEFT].plus(this._attr[Attribute.WIDTH])));
                 }
                 break;
             case Attribute.BOTTOM:
                 this._getAttr(Attribute.TOP);
                 this._getAttr(Attribute.HEIGHT);
                 if (process.env.CASSOWARYJS) {
-                    this._solver.addConstraint(new c.Equation(this._attr[attr], c.plus(this._attr[Attribute.TOP], this._attr[Attribute.HEIGHT])));
+                    this._solver.addConstraint(new solver.Equation(this._attr[attr], solver.plus(this._attr[Attribute.TOP], this._attr[Attribute.HEIGHT])));
                 }
                 else {
-                    this._solver.addConstraint(new kiwi.Constraint(this._attr[attr], kiwi.Operator.Eq, this._attr[Attribute.TOP].plus(this._attr[Attribute.HEIGHT])));
+                    this._solver.addConstraint(new solver.Constraint(this._attr[attr], solver.Operator.Eq, this._attr[Attribute.TOP].plus(this._attr[Attribute.HEIGHT])));
                 }
                 break;
             case Attribute.CENTERX:
                 this._getAttr(Attribute.LEFT);
                 this._getAttr(Attribute.WIDTH);
                 if (process.env.CASSOWARYJS) {
-                    this._solver.addConstraint(new c.Equation(this._attr[attr], c.plus(this._attr[Attribute.LEFT], c.divide(this._attr[Attribute.WIDTH], 2))));
+                    this._solver.addConstraint(new solver.Equation(this._attr[attr], solver.plus(this._attr[Attribute.LEFT], solver.divide(this._attr[Attribute.WIDTH], 2))));
                 }
                 else {
-                    this._solver.addConstraint(new kiwi.Constraint(this._attr[attr], kiwi.Operator.Eq, this._attr[Attribute.LEFT].plus(this._attr[Attribute.WIDTH].divide(2))));
+                    this._solver.addConstraint(new solver.Constraint(this._attr[attr], solver.Operator.Eq, this._attr[Attribute.LEFT].plus(this._attr[Attribute.WIDTH].divide(2))));
                 }
                 break;
             case Attribute.CENTERY:
                 this._getAttr(Attribute.TOP);
                 this._getAttr(Attribute.HEIGHT);
                 if (process.env.CASSOWARYJS) {
-                    this._solver.addConstraint(new c.Equation(this._attr[attr], c.plus(this._attr[Attribute.TOP], c.divide(this._attr[Attribute.HEIGHT], 2))));
+                    this._solver.addConstraint(new solver.Equation(this._attr[attr], solver.plus(this._attr[Attribute.TOP], solver.divide(this._attr[Attribute.HEIGHT], 2))));
                 }
                 else {
-                    this._solver.addConstraint(new kiwi.Constraint(this._attr[attr], kiwi.Operator.Eq, this._attr[Attribute.TOP].plus(this._attr[Attribute.HEIGHT].divide(2))));
+                    this._solver.addConstraint(new solver.Constraint(this._attr[attr], solver.Operator.Eq, this._attr[Attribute.TOP].plus(this._attr[Attribute.HEIGHT].divide(2))));
                 }
                 break;
         }

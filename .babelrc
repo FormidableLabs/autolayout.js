@@ -1,0 +1,21 @@
+{
+  "presets": ["es2015"],
+  "env": {
+    "CASSOWARYJS": {
+      "plugins": [
+        "transform-inline-environment-variables",
+        ["babel-plugin-module-alias", [
+          { "src": "./node_modules/cassowary", "expose": "constraint-solver" }
+        ]]
+      ]
+    },
+    "KIWI": {
+      "plugins": [
+        "transform-inline-environment-variables",
+        ["babel-plugin-module-alias", [
+          { "src": "./node_modules/kiwi-solver", "expose": "constraint-solver" }
+        ]]
+      ]
+    }
+  }
+}
