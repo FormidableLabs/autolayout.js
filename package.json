@@ -70,7 +70,6 @@
   },
   "scripts": {
     "test": "mocha",
-    "postinstall": "cd lib || npm run build-lib",
     "build": "npm run build-dist && npm run build-lib",
     "build-dist": "npm run build-dist-cassowary & npm run build-dist-kiwi",
     "build-dist-cassowary": "BABEL_ENV=CASSOWARYJS CASSOWARYJS=true webpack",

@@ -1,5 +1,4 @@
 {
-  "babelrc": false,
   "presets": ["es2015"],
   "env": {
     "CASSOWARYJS": {
