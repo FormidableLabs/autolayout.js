@@ -1,3 +1,5 @@
+import find from 'lodash.find';
+
 import solver from 'constraint-solver';
 import Attribute from './Attribute';
 import Relation from './Relation';
@@ -87,14 +89,26 @@ function _getSpacing(constraint) {
     return this._spacingExpr[index];
 }
 
-function _addConstraint(constraint) {
-    //this.constraints.push(constraint);
+function _constraintsAreEqual(first, second) {
+    return first.view1 === second.view1 &&
+        first.attr1 === second.attr1 &&
+        first.relation === second.relation &&
+        first.view2 === second.view2 &&
+        first.attr2 === second.attr2 &&
+        first.multiplier === second.multiplier &&
+        first.constant === second.constant &&
+        first.priority === second.priority;
+}
+
+function _constraintToRelation(constraint) {
     let relation;
+
     const multiplier = (constraint.multiplier !== undefined) ? constraint.multiplier : 1;
     let constant = (constraint.constant !== undefined) ? constraint.constant : 0;
     if (constant === 'default') {
         constant = _getSpacing.call(this, constraint);
     }
+
     const attr1 = _getSubView.call(this, constraint.view1)._getAttr(constraint.attr1);
     let attr2;
     if (process.env.CASSOWARYJS) {
@@ -159,7 +173,20 @@ function _addConstraint(constraint) {
                 throw 'Invalid relation specified: ' + constraint.relation;
         }
     }
+    return relation;
+}
+
+function _addConstraint(constraint) {
+    const relation = _constraintToRelation.call(this, constraint);
+    this._constraints.push({ constraint, relation });
     this._solver.addConstraint(relation);
+}
+
+function _removeConstraint(constraint) {
+    const storedConstraint = find(this._constraints, stored =>
+        _constraintsAreEqual(stored.constraint, constraint)
+    );
+    this._solver.removeConstraint(storedConstraint.relation);
 }
 
 function _compareSpacing(old, newz) {
@@ -209,6 +236,7 @@ class View {
     constructor(options) {
         this._solver = process.env.CASSOWARYJS ? new solver.SimplexSolver() : new solver.Solver();
         this._subViews = {};
+        this._constraints = [];
         //this._spacing = undefined;
         this._parentSubView = new SubView({
             solver: this._solver
@@ -405,6 +433,25 @@ class View {
     addConstraints(constraints) {
         for (var j = 0; j < constraints.length; j++) {
             _addConstraint.call(this, constraints[j]);
+        }
+        if (!process.env.CASSOWARYJS) {
+            this._solver.updateVariables();
+        }
+        return this;
+    }
+
+
+    removeConstraint(constraint) {
+        _removeConstraint.call(this, constraint);
+        if (!process.env.CASSOWARYJS) {
+            this._solver.updateVariables();
+        }
+        return this;
+    }
+
+    removeConstraints(constraints) {
+        for (var j = 0; j < constraints.length; j++) {
+            _removeConstraint.call(this, constraints[j]);
         }
         if (!process.env.CASSOWARYJS) {
             this._solver.updateVariables();
