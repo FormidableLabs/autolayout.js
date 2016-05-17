@@ -1,6 +1,6 @@
 /*global describe, it*/
-var assert = (typeof window === 'undefined') ? require('assert') : window.chai.assert;
-var AutoLayout = (typeof window === 'undefined') ? require('../dist/autolayout.kiwi.min').default : window.AutoLayout;
+var assert = require('assert');
+var AutoLayout = require('../lib/kiwi').default;
 
 describe('View', function() {
     describe('setSize', function() {
@@ -50,6 +50,60 @@ describe('View', function() {
             it('width should be equal 200', function() {
                 assert.equal(200, view.width);
             });
+        });
+    });
+
+    describe('removing constraints', function() {
+        it('should remove an existing constraint', function() {
+            var view = new AutoLayout.View({
+                width: 200,
+                height: 100
+            });
+
+            const constraint = {
+                view1: 'nonsense',
+                attr1: 'width',
+                relation: 'equ',
+                view2: null,
+                attr2: 'width'
+            };
+
+            view.addConstraint(constraint);
+            assert.equal(view.subViews.nonsense.width, view.width);
+
+            view.removeConstraint(constraint);
+            assert.equal(view.subViews.nonsense.width, 0);
+        });
+
+        it('should remove multiple existing constraints', function() {
+            var view = new AutoLayout.View({
+                width: 200,
+                height: 100
+            });
+
+            const widthConstraint = {
+                view1: 'nonsense',
+                attr1: 'width',
+                relation: 'equ',
+                view2: null,
+                attr2: 'width'
+            };
+
+            const heightConstraint = {
+                view1: 'nonsense',
+                attr1: 'height',
+                relation: 'equ',
+                view2: null,
+                attr2: 'height'
+            };
+
+            view.addConstraints([widthConstraint, heightConstraint]);
+            assert.equal(view.subViews.nonsense.width, view.width);
+            assert.equal(view.subViews.nonsense.height, view.height);
+
+            view.removeConstraints([widthConstraint, heightConstraint]);
+            assert.equal(view.subViews.nonsense.width, 0);
+            assert.equal(view.subViews.nonsense.height, 0);
         });
     });
 
