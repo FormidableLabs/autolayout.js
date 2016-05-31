@@ -186,6 +186,7 @@ function _removeConstraint(constraint) {
     const storedConstraint = find(this._constraints, stored =>
         _constraintsAreEqual(stored.constraint, constraint)
     );
+    this._constraints.splice(this._constraints.indexOf(storedConstraint), 1);
     this._solver.removeConstraint(storedConstraint.relation);
 }
 
